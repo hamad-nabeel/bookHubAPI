@@ -2,7 +2,7 @@ from datetime import timedelta, datetime
 from typing import Annotated
 
 from fastapi import APIRouter, Depends, status, HTTPException
-from fastapi.security import OAuth2PasswordRequestForm
+from fastapi.security import OAuth2PasswordRequestForm, OAuth2PasswordBearer
 from jose import jwt
 from sqlalchemy.orm import Session
 from pydantic import BaseModel, Field
@@ -34,6 +34,7 @@ def get_db():
 
 bcrypt_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 db_dependency = Annotated[Session, Depends(get_db)]
+oauth2_bearer = OAuth2PasswordBearer(tokenUrl="/auth/token")
 
 class UserRequest(BaseModel):
     first_name: str
@@ -51,6 +52,17 @@ def authenticate_user(username: str, password: str, db):
     if not bcrypt_context.verify(password, user.hashed_password):
         return False
     return user
+
+def get_current_user(token: Annotated[str, Depends(oauth2_bearer)] ):
+    payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+    username: str = payload.get("sub")
+    user_id: str = payload.get("id")
+    if not user_id or not username:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Incorrect username or password")
+    return {
+        "username": username,
+        "id": user_id,
+    }
 
 def create_token(username: str,user_id: str, expire_delta: timedelta):
     encode={

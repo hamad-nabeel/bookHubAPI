@@ -1,3 +1,5 @@
+from sqlalchemy.orm import relationship
+
 from database import Base
 from sqlalchemy import Column, String, Boolean, Integer, ForeignKey
 
@@ -12,14 +14,16 @@ class User(Base):
     hashed_password = Column(String)
     role = Column(String)
 
-
 class Book(Base):
     __tablename__ = "book"
     id = Column(Integer, primary_key=True)
     title = Column(String)
     author_id = Column(Integer, ForeignKey("user.id"))
-    published_date = Column(String)
+    year = Column(Integer)
+    day = Column(Integer)
+    month = Column(Integer)
     description = Column(String)
+
 
 
 
