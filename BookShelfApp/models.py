@@ -24,6 +24,16 @@ class Book(Base):
     month = Column(Integer)
     description = Column(String)
 
+class Chapter(Base):
+    __tablename__ = "chapter"
+    id = Column(Integer, primary_key=True)
+    title = Column(String)
+    book_id = Column(Integer, ForeignKey("book.id"))
+    author_id = Column(Integer, ForeignKey("user.id"))
+    text = Column(String)
+
+
+
 
 
 

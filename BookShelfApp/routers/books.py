@@ -2,6 +2,7 @@ from datetime import timedelta, datetime
 from typing import Annotated, Optional
 
 from fastapi import APIRouter, Depends, status, HTTPException
+from fastapi.responses import PlainTextResponse
 from sqlalchemy.sql.functions import current_user
 
 from .auth import get_current_user
@@ -10,7 +11,7 @@ from pydantic import BaseModel, Field
 from database import SessionLocal
 from passlib.context import CryptContext
 
-from models import User, Book
+from models import User, Book, Chapter
 
 router = APIRouter(
     prefix="/books",
@@ -37,6 +38,16 @@ class BookRequest(BaseModel):
     month: int = Field(gt=0, lt=13)
 
 
+class ChapterRequest(BaseModel):
+    title: str = Field(min_length=2, max_length=100)
+    text: str
+
+
+
+
+
+
+
 @router.post("/books")
 async def create_book(current_user: user_dependency, db: db_dependency, book_request: BookRequest):
     if not current_user:
@@ -52,7 +63,6 @@ async def create_book(current_user: user_dependency, db: db_dependency, book_req
     )
     db.add(new_book)
     db.commit()
-
 @router.get("/all_books")
 async def get_all_books(db: db_dependency, user: user_dependency):
     books = db.query(Book).filter(Book.author_id == user.get("id")).all()
@@ -80,7 +90,21 @@ async def get_books(
 
     return query.all()
 
+@router.get("/read/{book_id}")
+async def read_book(db:db_dependency, book_id: int, user: user_dependency):
+    book = db.query(Book).filter(Book.id == book_id).filter(Book.author_id==user.get("id")).first()
+    chapters = db.query(Chapter).filter(Chapter.book_id == book_id).filter(Chapter.author_id==user.get("id")).all()
+    if not chapters:
+        raise HTTPException(status_code=404, detail="Book not found")
+    lines = []
+    lines.append("Book: " + book.title + "\n")
+    for chapter in chapters:
+        lines.append("Chapter: " + chapter.title + "\n")
+        lines.append(chapter.text + "\n")
+        lines.append("\n")
 
+    full_text = "\n".join(lines)
+    return PlainTextResponse(full_text, media_type="text/plain")
 @router.put("/{book_id}")
 async def update_book(book_id: int, book_request: BookRequest, db: db_dependency, user: user_dependency):
     book = db.query(Book).filter(Book.id == book_id).filter(Book.author_id==user.get('id')).first()
@@ -98,4 +122,22 @@ async def update_book(book_id: int, book_request: BookRequest, db: db_dependency
 async def delete_book(book_id: int, db: db_dependency, user: user_dependency):
     db.query(Book).filter(Book.id == book_id).filter(Book.author_id==user.get("id")).delete()
     db.commit()
+
+
+
+@router.post('/{book_id}/chapters')
+async def create_chapter(book_id: int, db: db_dependency, user: user_dependency, chapter: ChapterRequest ):
+    book = db.query(Book).filter(Book.id == book_id).filter(Book.author_id==user.get("id")).first()
+    if not book:
+        raise HTTPException(status_code=404, detail="Book not found")
+    new_chapter = Chapter(
+        title=chapter.title,
+        text=chapter.text,
+        author_id=user.get("id"),
+        book_id=book_id,
+    )
+    db.add(new_chapter)
+    db.commit()
+    return new_chapter
+
 
