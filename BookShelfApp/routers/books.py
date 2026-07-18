@@ -141,3 +141,28 @@ async def create_chapter(book_id: int, db: db_dependency, user: user_dependency,
     return new_chapter
 
 
+@router.put('/{book_id}/{chapter_id}')
+async def edit_chapter(book_id: int, chapter_id: int,  chapter_edit: ChapterRequest, db: db_dependency, user: user_dependency):
+    book = db.query(Book).filter(Book.id == book_id).filter(Book.author_id==user.get("id")).first()
+    if not book:
+        raise HTTPException(status_code=404, detail="Book not found")
+    chapter =db.query(Chapter).filter(Chapter.book_id == book_id).filter(Chapter.author_id==user.get("id")).filter(Chapter.id==chapter_id).first()
+    if not chapter:
+        raise HTTPException(status_code=404, detail="Chapter not found")
+    chapter.title = chapter_edit.title
+    chapter.text = chapter_edit.text
+    db.commit()
+
+@router.delete('/{book_id}/{chapter_id}')
+async def delete_chapter(book_id: int, chapter_id: int, db: db_dependency, user: user_dependency):
+    book = db.query(Book).filter(Book.id == book_id).filter(Book.author_id == user.get("id")).first()
+    if not book:
+        raise HTTPException(status_code=404, detail="Book not found")
+    chapter = db.query(Chapter).filter(Chapter.book_id == book_id).filter(Chapter.author_id == user.get("id")).filter(
+        Chapter.id == chapter_id).first()
+    if not chapter:
+        raise HTTPException(status_code=404, detail="Chapter not found")
+    db.delete(chapter)
+    db.commit()
+
+
