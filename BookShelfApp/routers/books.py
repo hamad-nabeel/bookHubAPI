@@ -3,7 +3,6 @@ from typing import Annotated, Optional
 
 from fastapi import APIRouter, Depends, status, HTTPException
 from fastapi.responses import PlainTextResponse
-from sqlalchemy.sql.functions import current_user
 
 from .auth import get_current_user
 from sqlalchemy.orm import Session
@@ -62,12 +61,16 @@ async def create_book(current_user: user_dependency, db: db_dependency, book_req
         author_id=current_user.get("id"),
     )
     db.add(new_book)
+    user = db.query(User).filter(User.id == current_user.get("id")).first()
+    if not user:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED,
+                            detail="Incorrect username or password")
+    user.number_of_books +=1
     db.commit()
 @router.get("/all_books")
 async def get_all_books(db: db_dependency, user: user_dependency):
-    books = db.query(Book).filter(Book.author_id == user.get("id")).all()
-    return books
-
+    current_user = db.query(User).filter(User.id == user.get("id")).first()
+    return current_user.books
 
 @router.get("/{book_name}")
 async def get_book(book_name: str, db: db_dependency, user: user_dependency):
@@ -121,6 +124,8 @@ async def update_book(book_id: int, book_request: BookRequest, db: db_dependency
 @router.delete("/{book_id}")
 async def delete_book(book_id: int, db: db_dependency, user: user_dependency):
     db.query(Book).filter(Book.id == book_id).filter(Book.author_id==user.get("id")).delete()
+    current_user = db.query(User).filter(User.id == user.get("id")).first()
+    current_user.number_of_books -=1
     db.commit()
 
 

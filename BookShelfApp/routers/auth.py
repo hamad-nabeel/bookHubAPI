@@ -82,6 +82,8 @@ async def create_user(user: UserRequest, db: db_dependency):
         hashed_password=bcrypt_context.hash(user.password),
         username=user.username,
         role=user.role,
+        biography= "",
+        number_of_books=0
     )
     db.add(new_user)
     db.commit()

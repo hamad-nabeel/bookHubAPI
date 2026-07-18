@@ -11,8 +11,11 @@ class User(Base):
     first_name = Column(String)
     last_name = Column(String)
     email = Column(String)
+    biography = Column(String)
     hashed_password = Column(String)
     role = Column(String)
+    number_of_books = Column(Integer)
+    books = relationship("Book", back_populates="author")
 
 class Book(Base):
     __tablename__ = "book"
@@ -23,6 +26,7 @@ class Book(Base):
     day = Column(Integer)
     month = Column(Integer)
     description = Column(String)
+    author = relationship("User", back_populates="books")
 
 class Chapter(Base):
     __tablename__ = "chapter"
