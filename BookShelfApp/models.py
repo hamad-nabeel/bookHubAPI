@@ -36,13 +36,7 @@ class Chapter(Base):
     author_id = Column(Integer, ForeignKey("user.id"))
     text = Column(String)
 
-
-
-
-
-
-
-
-
-
-
+class SavedBook(Base):
+    __tablename__ = "saved_book"
+    user_id = Column(Integer, ForeignKey("user.id"), primary_key=True)
+    book_id = Column(Integer, ForeignKey("book.id"), primary_key=True)

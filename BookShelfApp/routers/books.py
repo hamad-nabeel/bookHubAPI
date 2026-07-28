@@ -1,5 +1,5 @@
 from datetime import timedelta, datetime
-from typing import Annotated, Optional
+from typing import Annotated, Optional, List
 
 from fastapi import APIRouter, Depends, status, HTTPException
 from fastapi.responses import PlainTextResponse
@@ -10,7 +10,7 @@ from pydantic import BaseModel, Field
 from database import SessionLocal
 from passlib.context import CryptContext
 
-from models import User, Book, Chapter
+from models import User, Book, Chapter, SavedBook
 
 router = APIRouter(
     prefix="/books",
@@ -129,7 +129,6 @@ async def delete_book(book_id: int, db: db_dependency, user: user_dependency):
     db.commit()
 
 
-
 @router.post('/{book_id}/chapters')
 async def create_chapter(book_id: int, db: db_dependency, user: user_dependency, chapter: ChapterRequest ):
     book = db.query(Book).filter(Book.id == book_id).filter(Book.author_id==user.get("id")).first()
@@ -171,3 +170,43 @@ async def delete_chapter(book_id: int, chapter_id: int, db: db_dependency, user:
     db.commit()
 
 
+@router.get("/{username}/books/{book_name}")
+async def get_book(username: str, book_name: str, db: db_dependency):
+    searched_user = db.query(User).filter(User.username.ilike(username)).first()
+    if not searched_user:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
+    book = db.query(Book).filter(Book.title.ilike(book_name)).filter(Book.author_id == searched_user.id).first()
+    return book
+
+@router.post("/saved_books")
+async def save_book(username: str, book_name: str, db: db_dependency, user: user_dependency):
+    searched_user = db.query(User).filter(User.username.ilike(username)).first()
+    if not searched_user:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
+    if searched_user.id == user.get("id"):
+        return "CANNOT SAVE YOUR OWN BOOK"
+    book = db.query(Book).filter(Book.title.ilike(book_name)).filter(Book.author_id == searched_user.id).first()
+
+    existing_save = db.query(SavedBook).filter(SavedBook.user_id == user.get("id"), SavedBook.book_id == book.id).first()
+    if existing_save:
+        return "Book already saved"
+
+    new_save = SavedBook(user_id= user.get("id"), book_id= book.id)
+    db.add(new_save)
+    db.commit()
+    return "Book saved successfully"
+
+@router.get("/saved_books/all")
+async def get_saved_books(db: db_dependency, user: user_dependency):
+    saved_books = db.query(SavedBook).filter(SavedBook.user_id == user.get("id")).all()
+    all_books = []
+    for book in saved_books:
+        unpacked_book = db.query(Book).filter(Book.id == book.book_id).first()
+        book_information = [
+            unpacked_book.title,
+            unpacked_book.description,
+            unpacked_book.author.first_name,
+            unpacked_book.author.last_name,
+        ]
+        all_books.append(book_information)
+    return all_books

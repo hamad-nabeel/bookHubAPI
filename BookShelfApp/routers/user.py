@@ -5,7 +5,7 @@ from fastapi import APIRouter, Depends, status, HTTPException
 from fastapi.responses import PlainTextResponse
 from sqlalchemy.sql.functions import user
 
-from models import User
+from models import User, Book
 from .auth import get_current_user
 from sqlalchemy.orm import Session
 from pydantic import BaseModel, Field
@@ -37,6 +37,9 @@ def produce_my_profile(user: User):
     lines.append("Email: " + user.email + "\n")
     lines.append("Biography: " + user.biography + "\n")
     lines.append("Number of books: " + str(user.number_of_books) + "\n")
+    lines.append("Books Published: " + "\n")
+    for book in user.books:
+        lines.append(book.title + "\n")
     return PlainTextResponse("\n".join(lines), media_type="text/plain")
 
 def produce_searched_profile(user: User):
@@ -72,5 +75,9 @@ async def get_profile(username: str, db: db_dependency):
     if not searched_user:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
     return produce_searched_profile(searched_user)
+
+
+
+
 
 
