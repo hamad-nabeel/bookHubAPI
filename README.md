@@ -1,49 +1,47 @@
 # 📚 BookShelf API
 
-BookShelf API is a RESTful backend built with **FastAPI** that allows users to create accounts and publish their own books. The project is designed as a learning exercise to practice backend development, authentication, database design, and REST API principles using Python.
+BookShelf API is a RESTful backend built with **FastAPI** that allows users to create accounts, publish books, organize them into chapters, discover other authors, and save books to their personal library. The project was built to practice backend development with Python while following REST API principles, authentication, authorization, and database design.
 
-## Features
+---
 
-### Current
+## ✨ Features
 
-* User registration and authentication
-* JWT-based authentication
-* Create, read, update, and delete books
-* User ownership verification (users can only modify their own books)
-* SQLite database with SQLAlchemy ORM
-* Automatic interactive API documentation with Swagger UI
+- User registration and authentication
+- JWT-based authentication
+- User profiles
+- Search users by username
+- Create, read, update, and delete books
+- Create, edit, and delete book chapters
+- User ownership verification (users can only modify their own content)
+- Save and unsave books from other users
+- SQLite database with SQLAlchemy ORM
+- Request validation with Pydantic
+- Interactive API documentation with Swagger UI and ReDoc
 
-### Planned
+---
 
-* User profiles
-* Book chapters
-* Comments and reviews
-* Likes and favorites
-* Search by title or author
-* Admin role and moderation
-* Reading lists
-* Follow authors
-* Pagination and filtering
+## 🛠 Tech Stack
 
-## Tech Stack
+- **Backend:** FastAPI
+- **Language:** Python
+- **Database:** SQLite
+- **ORM:** SQLAlchemy
+- **Authentication:** JWT (JSON Web Tokens)
+- **Validation:** Pydantic
+- **Server:** Uvicorn
 
-* **Backend:** FastAPI
-* **Language:** Python
-* **Database:** SQLite
-* **ORM:** SQLAlchemy
-* **Authentication:** JWT (JSON Web Tokens)
-* **Validation:** Pydantic
-* **Server:** Uvicorn
+---
 
-## Project Structure
+## 📁 Project Structure
 
-```text
+```
 BookShelfApp/
 │
 ├── routers/
 │   ├── auth.py
 │   ├── users.py
-│   └── books.py
+│   ├── books.py
+│   └── chapters.py
 │
 ├── models.py
 ├── database.py
@@ -52,7 +50,9 @@ BookShelfApp/
 └── README.md
 ```
 
-## Getting Started
+---
+
+## 🚀 Getting Started
 
 ### 1. Clone the repository
 
@@ -69,13 +69,13 @@ python -m venv .fastapienv
 
 ### 3. Activate the virtual environment
 
-macOS/Linux
+**macOS / Linux**
 
 ```bash
 source .fastapienv/bin/activate
 ```
 
-Windows
+**Windows**
 
 ```bash
 .fastapienv\Scripts\activate
@@ -99,44 +99,94 @@ The API will be available at:
 http://127.0.0.1:8000
 ```
 
-## API Documentation
+---
+
+## 📖 API Documentation
 
 FastAPI automatically generates interactive documentation.
 
-Swagger UI:
+**Swagger UI**
 
 ```
 http://127.0.0.1:8000/docs
 ```
 
-ReDoc:
+**ReDoc**
 
 ```
 http://127.0.0.1:8000/redoc
 ```
 
-## Learning Goals
+---
 
-This project is intended to strengthen understanding of:
+## 🔑 Core Functionality
 
-* REST API design
-* FastAPI routing
-* SQLAlchemy relationships
-* Authentication and authorization
-* CRUD operations
-* Database design
-* Project organization using routers
-* Backend best practices
+### Authentication
 
-## Future Improvements
+- Register a new account
+- Log in using JWT authentication
+- Secure authenticated endpoints
 
-* Switch from SQLite to PostgreSQL
-* Database migrations using Alembic
-* Docker support
-* Unit and integration testing
-* CI/CD pipeline
-* Cloud deployment
+### Users
 
-## License
+- View user profiles
+- Search users by username
+
+### Books
+
+- Create books
+- Retrieve books
+- Update books
+- Delete books
+
+### Chapters
+
+- Add chapters to books
+- Edit chapters
+- Delete chapters
+- Organize books into multiple chapters
+
+### Library
+
+- Save books created by other users
+- Remove books from saved collection
+- View saved books
+
+### Authorization
+
+Ownership checks ensure users can only edit or delete the books and chapters they own.
+
+---
+
+## 🎯 Learning Goals
+
+This project was built to strengthen understanding of:
+
+- REST API design
+- FastAPI routing
+- Authentication and authorization
+- SQLAlchemy ORM
+- CRUD operations
+- Database relationships
+- Project organization using routers
+- Backend best practices
+
+---
+
+## 🔮 Possible Future Improvements
+
+While the project is feature complete, possible enhancements include:
+
+- PostgreSQL support
+- Alembic database migrations
+- Docker support
+- Unit and integration testing
+- CI/CD pipeline
+- Cloud deployment
+
+---
+
+## 📄 License
 
 This project is open source and available for educational purposes.
+
